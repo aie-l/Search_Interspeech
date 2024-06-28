@@ -11,12 +11,13 @@ from collections import defaultdict
 def search_s2(
     query: list,
     fields: list,
-    year: int,
-    paper_count: int = 2000,
+    year: int = 1987,
+    paper_count: int = 20000,
     venue: str = "Interspeech",
     downlad: bool = True,
 ):
-    fields = "title,year,externalIds,venue,openAccessPdf"
+    fields = ','.join(fields) if len(fields) > 1 else fields
+    query = ','.join(query) if len(query) > 1 else query
     url = f"http://api.semanticscholar.org/graph/v1/paper/search/bulk?query={query}&fields={','.join(fields)}&year={year}-&venue={venue}&limit={paper_count}"
     r = requests.get(url).json()
     print(f"Will retrieve an estimated {r['total']} documents")
