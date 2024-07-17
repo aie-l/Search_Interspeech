@@ -4,8 +4,7 @@ import json
 import pydoi
 import requests
 from tqdm import tqdm
-from os.path import exists
-from collections import defaultdict
+from argparse import ArgumentParser
 
 
 def search_s2(
@@ -81,6 +80,78 @@ def download_pdf(url, out_dir):
         return True
     except Exception:
         return False
+
+
+def write_tsv(results, fields, header=False, out_file='results.tsv'):
+    """Write the results to a tab separated file."""
+    with open(out_file, 'a', encoding='utf-8') as outf:
+        writer = csv.writer(outf, delimter = '\t')
+        if header:
+            writer.writerow(header)
+
+        if 'error' not in fields:
+            fields.append('error')
+        if 'query' not in fields:
+
+        for paper in results:
+
+
+
+
+
+
+
+
+
+
+
+def main():
+    parser = ArgumentParser(description="A commandline script to search for and download papers from one or more venues from the ISCA archives using Semantic Scholar.")
+    parser.add_argument("--year", type=int, desc="Enter the first year to be included in the search.", default=1970)
+    parser.add_argument("--venues", type=str, desc="Enter the venues to be searched through (e.g., `interspeech,IberSPEECH`)", default="interspeech")
+    parser.add_argument("--max_results", type=int, desc="Enter the maximum number of results to return.", default=20000)
+    parser.add_argument("--query", "-q", desc="Enter the query here following the Semantic Scholar API query format.", required=True)
+    parser.add_argument("--fields", desc="Enter the SemanticScholar API fields (bulk search) to return for each record (e.g., `title,year,venue,externalIds' -- `externalIds' is required).", default="title,year,externalIds,venue,openAccessPdf")
+    parser.add_argument("--download", desc="Download the PDFs as well as creating a spreadsheet.", default=True)
+    parser.add_argument("--download_dir", desc="Directory to store downloaded PDFs to", default="pdfs/")
+    args = parser.parse_args()
+
+    fields = args.fields.split(',')
+    if 'externalIds' not in fields:
+        fields.append('externalIds')
+        args.fields = ",".join(fields)
+
+    search_results = search_s2(**args)
+    results = []
+
+    for paper in search_results:
+        paper = search_results.pop(paper)
+        paper['errors'] = []
+
+        # Extract DOI
+        doi = extract_doi(paper)
+        if doi:
+            # Get the URL
+            url = extract_url(doi)
+            pdf_link = parse_url(url)
+
+            if args.download:
+                pdf = download_pdf(pdf_link, args.download_dir)
+                if not pdf:
+                    paper['errors'].append("PDF Download")
+        else:
+            paper['errors'].append("DOI Lookup")
+
+        results.append(paper)
+
+
+
+
+
+
+
+
+
 
 
 def write_csv(info_dict):
