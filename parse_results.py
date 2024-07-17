@@ -49,7 +49,10 @@ def extract_doi(paper):
     try:
         return paper["externalIds"]["DOI"]
     except KeyError:
-        return False
+        try:
+            return paper['externalIds']['ArXiv']
+        except KeyError:
+            return False
 
 
 def extract_url(doi):
