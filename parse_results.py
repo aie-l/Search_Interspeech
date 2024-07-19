@@ -128,9 +128,7 @@ def search_s2(
                     if idx not in idx_list:
                         idx_list.append(idx)
                         res = {key: paper.get(key) for key in fields}
-                        res.update(
-                            {"idx": idx, "url": extract_url(paper), "term": term}
-                        )
+                        res.update({"idx": idx, "term": term, "url": None, "pdf": None})
                         yield res
 
             if "token" not in r:
