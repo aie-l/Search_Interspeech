@@ -29,6 +29,30 @@ def get_idx(paper):
         return paper["externalIds"]["CorpusId"]
 
 
+def url_to_pdf_link(url):
+    """Parse URL into the link for the PDF."""
+    if "arxiv" in url:
+        url = url.replace("abs", "pdf")
+        url = f"{url}.pdf"
+    elif "isca-archive" in url:
+        url = url.replace("html", "pdf")
+    return url
+
+
+def download_pdf(url, out_dir):
+    """Download the PDF in a given url."""
+    f_name = url.split("/")[-1]
+    path = f"{out_dir}/{f_name}"
+
+    try:
+        resp = requests.get(url)
+        with open(path, "wb") as file:
+            file.write(resp.content)
+        return True
+    except Exception:
+        return False
+
+
 def search_s2(
     queries: List[str],
     venues: str,
@@ -77,30 +101,6 @@ def search_s2(
             if "token" not in r:
                 break
             r = requests.get(f"{url}&token={r['token']}").json()
-
-
-def url_to_pdf_link(url):
-    """Parse URL into the link for the PDF."""
-    if "arxiv" in url:
-        url = url.replace("abs", "pdf")
-        url = f"{url}.pdf"
-    elif "isca-archive" in url:
-        url = url.replace("html", "pdf")
-    return url
-
-
-def download_pdf(url, out_dir):
-    """Download the PDF in a given url."""
-    f_name = url.split("/")[-1]
-    path = f"{out_dir}/{f_name}"
-
-    try:
-        resp = requests.get(url)
-        with open(path, "wb") as file:
-            file.write(resp.content)
-        return True
-    except Exception:
-        return False
 
 
 def main():
