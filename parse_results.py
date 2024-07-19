@@ -64,30 +64,6 @@ def write_results(writer, results, header=False):
         writer.writerow(line)
 
 
-def url_to_pdf_link(url):
-    """Parse URL into the link for the PDF."""
-    if "arxiv" in url:
-        url = url.replace("abs", "pdf")
-        url = f"{url}.pdf"
-    elif "isca-archive" in url:
-        url = url.replace("html", "pdf")
-    return url
-
-
-def download_pdf(url, out_dir):
-    """Download the PDF in a given url."""
-    f_name = url.split("/")[-1]
-    path = f"{out_dir}/{f_name}"
-
-    try:
-        resp = requests.get(url)
-        with open(path, "wb") as file:
-            file.write(resp.content)
-        return True
-    except Exception:
-        return False
-
-
 def search_s2(
     queries: List[str],
     venues: str,
@@ -172,7 +148,7 @@ def main():
         desc="Enter S2 fields (bulk search) to return (e.g., `title,year,externalIds').",
         default="title,year,venue,openAccessPdf,externalIds",
     )
-    paers.add_argument(
+    parser.add_argument(
         "--csv_name",
         desc="Add the name of the file to save results to.",
         default="results.tsv",
@@ -217,10 +193,10 @@ def main():
 
         to_write.append(line)
 
-    with open(args.csv, 'w', encoding = 'utf-8') as file:
-        writer = csv.writer(file, delimiter = '\t')
-        write_results(writer, to_write, header + ['Relevant'])
+    with open(args.csv, "w", encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter="\t")
+        write_results(writer, to_write, header + ["Relevant"])
 
 
 if __name__ == "__main__":
-    pass
+    main()
