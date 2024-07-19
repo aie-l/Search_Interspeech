@@ -172,6 +172,11 @@ def main():
         desc="Enter S2 fields (bulk search) to return (e.g., `title,year,externalIds').",
         default="title,year,venue,openAccessPdf,externalIds",
     )
+    paers.add_argument(
+        "--csv_name",
+        desc="Add the name of the file to save results to.",
+        default="results.tsv",
+    )
     parser.add_argument(
         "--download",
         desc="Download the PDFs as well as creating a spreadsheet.",
