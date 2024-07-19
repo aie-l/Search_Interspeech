@@ -175,7 +175,13 @@ def main():
         if args.download:
             download_pdf(pdf_url, args.download_dir)
 
-        results.append(paper)
+        line = [paper[key] for key in header]
+
+        to_write.append(line)
+
+    with open(args.csv, 'w', encoding = 'utf-8') as file:
+        writer = csv.writer(file, delimiter = '\t')
+        write_results(writer, to_write, header + ['Relevant'])
 
 
 if __name__ == "__main__":
