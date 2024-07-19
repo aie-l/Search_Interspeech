@@ -61,7 +61,7 @@ def extract_url(doi):
     return resp
 
 
-def parse_url(url):
+def url_to_pdf_link(url):
     """Parse URL into the link for the PDF."""
     if "arxiv" in url:
         url = url.replace("abs", "pdf")
