@@ -8,6 +8,56 @@ from argparse import ArgumentParser
 
 
 
+def search_s2(
+    queries: List[str],
+    venues: str,
+    fields: List[str],
+    year_start=None,
+    year_end=None,
+    **kwargs,
+):
+    """Search S2 for one term at a time."""
+
+    idx_list = []
+    # Set up strings
+    year_start_url = "&year={year_start}-" if year_start else ""
+    if year_end:
+        year_end_url = f"{year_end}" if year_start else f"&year=-{year_end}"
+    else:
+        year_end_url = ""
+    year_str = f"{year_start_url}{year_end_url}"
+    venue_str = f"&venue={venues}"
+
+    # Ensure ExternalIds (contain DOI) is always the last element.
+    if "externalIds" not in fields:
+        fields.append("externalIds")
+    elif "ExternalIds" in fields:
+        fields.pop("ExternalIds")
+    fields_str = f"&fields={','.join(fields)}"
+    base_str = "http://api.semanticscholar.org/graph/v1/paper/search/bulk?"
+
+    for term in queries:
+        url = f"{base_str}term={term}{fields_str}{venue_str}{year_str}"
+        r = requests.get(url).json()
+        print(f"Will retrieve an estimated {r['total']} documents for {term}")
+
+        while True:
+            if "data" in r:
+                for paper in tqdm(r["data"]):
+                    idx = get_idx(paper)
+                    if idx not in idx_list:
+                        idx_list.append(idx)
+                        res = {key: paper.get(key) for key in fields}
+                        res.update(
+                            {"idx": idx, "url": extract_url(paper), "term": term}
+                        )
+                        yield res
+
+            if "token" not in r:
+                break
+            r = requests.get(f"{url}&token={r['token']}").json()
+
+
 def url_to_pdf_link(url):
     """Parse URL into the link for the PDF."""
     if "arxiv" in url:
