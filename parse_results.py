@@ -6,6 +6,27 @@ from typing import List
 from argparse import ArgumentParser
 
 
+def extract_url(paper):
+    """Get URL for paper. Give preference to ArXiv"""
+    if "ArXiv" in paper["externalIds"].keys():
+        arxiv_idx = paper["externalIds"]["ArXiv"]
+        return f"https://arxiv.org/abs/{arxiv_idx}"
+    elif "DOI" in paper["externalIds"].keys():
+        resolved = pydoi.get_url(paper["externalIds"]["DOI"])
+        return resolved if resolved else paper["url"]
+    else:
+        return False
+
+
+def get_idx(paper):
+    """Get DOI from S2."""
+    external_ids = [idx.upper() for idx in paper["externalIds"].keys()]
+    if "DOI" in external_ids:
+        return paper["externalIds"]["DOI"]
+    elif "ARXIV" in external_ids:
+        return paper["externalIds"]["ArXiv"]
+    else:
+        return paper["externalIds"]["CorpusId"]
 
 
 def search_s2(
