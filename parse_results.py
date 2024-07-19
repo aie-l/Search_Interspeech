@@ -109,14 +109,46 @@ def write_tsv(results, fields, header=False, out_file='results.tsv'):
 
 
 def main():
-    parser = ArgumentParser(description="A commandline script to search for and download papers from one or more venues from the ISCA archives using Semantic Scholar.")
-    parser.add_argument("--year", type=int, desc="Enter the first year to be included in the search.", default=1970)
-    parser.add_argument("--venues", type=str, desc="Enter the venues to be searched through (e.g., `interspeech,IberSPEECH`)", default="interspeech")
-    parser.add_argument("--max_results", type=int, desc="Enter the maximum number of results to return.", default=20000)
-    parser.add_argument("--query", "-q", desc="Enter the query here following the Semantic Scholar API query format.", required=True)
-    parser.add_argument("--fields", desc="Enter the SemanticScholar API fields (bulk search) to return for each record (e.g., `title,year,venue,externalIds' -- `externalIds' is required).", default="title,year,externalIds,venue,openAccessPdf")
-    parser.add_argument("--download", desc="Download the PDFs as well as creating a spreadsheet.", default=True)
-    parser.add_argument("--download_dir", desc="Directory to store downloaded PDFs to", default="pdfs/")
+    parser = ArgumentParser(
+        description="A commandline script to search for and download papers from one or more venues from the ISCA archives using Semantic Scholar."
+    )
+    parser.add_argument(
+        "--year",
+        type=int,
+        desc="Enter the first year to be included in the search.",
+        default=1970,
+    )
+    parser.add_argument(
+        "--venues",
+        type=str,
+        desc="Enter the venues to be searched through (e.g., `interspeech,IberSPEECH`)",
+        default="interspeech",
+    )
+    parser.add_argument(
+        "--max_results",
+        type=int,
+        desc="Enter the maximum number of results to return.",
+        default=20000,
+    )
+    parser.add_argument(
+        "--query",
+        "-q",
+        desc="Enter the query here following the Semantic Scholar API query format.",
+        required=True,
+    )
+    parser.add_argument(
+        "--fields",
+        desc="Enter the SemanticScholar API fields (bulk search) to return for each record (e.g., `title,year,venue,externalIds' -- `externalIds' is required).",
+        default="title,year,externalIds,venue,openAccessPdf",
+    )
+    parser.add_argument(
+        "--download",
+        desc="Download the PDFs as well as creating a spreadsheet.",
+        default=True,
+    )
+    parser.add_argument(
+        "--download_dir", desc="Directory to store downloaded PDFs to", default="pdfs/"
+    )
     args = parser.parse_args()
 
     fields = args.fields.split(',')
