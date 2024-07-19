@@ -150,7 +150,8 @@ def main():
     args = parser.parse_args()
 
     search_results = search_s2(**args)
-    results = []
+    to_write = []
+    header = ["idx", "url", "pdf", "title", "abstract", "venue"]
 
     for paper in search_results:
         paper = search_results.pop(paper)
@@ -160,15 +161,16 @@ def main():
         pdf_url = url_to_pdf_link(url)
 
         if url:
-            paper['link'] = url
+            paper["link"] = url
         else:
-            paper['link'] = paper['url']
-            paper['errors'].append('Paper URL not found')
+            paper["link"] = paper["url"]
+            paper["errors"].append("Paper URL not found")
 
         if pdf_url:
-            paper['pdf'] = pdf_url
+            paper["pdf"] = pdf_url
         else:
-            paper['errors'].append('PDF URL not found')
+            paper["pdf"] = ""
+            paper["errors"].append("PDF URL not found")
 
         if args.download:
             download_pdf(pdf_url, args.download_dir)
