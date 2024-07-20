@@ -3,6 +3,8 @@ Uses the Semantic Scholar API to search and download Interspeech papers based on
 
 The tool is tested on python 3.9 and is quite slow, as it is doing lookups and reconstruction of URLs from DOIs.
 
+Note: This is still in development, so please do submit issues and pull requests for bugs and fixes!
+
 ## Use
 
 1. Download the git repository.
