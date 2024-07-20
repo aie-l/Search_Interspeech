@@ -1,5 +1,5 @@
 # Search Interspeech
-Uses the Semantic Scholar API to search and download Interspeech papers based on keyword search.
+Uses the Semantic Scholar API to search and download papers published on the ISCA archives using given keywords.
 
 The tool is tested on python 3.9 and is quite slow, as it is doing lookups and reconstruction of URLs from DOIs.
 
