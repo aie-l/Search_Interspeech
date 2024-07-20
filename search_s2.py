@@ -71,20 +71,20 @@ def search_s2(
     queries: List[str],
     venues: str,
     fields: List[str],
-    year_start=None,
-    year_end=None,
+    start_year=None,
+    end_year=None,
     **kwargs,
 ):
     """Search S2 for one term at a time."""
 
     idx_list = []
     # Set up strings
-    year_start_url = "&year={year_start}-" if year_start else ""
-    if year_end:
-        year_end_url = f"{year_end}" if year_start else f"&year=-{year_end}"
+    start_year_url = f"{start_year}-" if start_year else ""
+    if end_year:
+        end_year_url = f"{end_year}" if start_year else f"&year=-{end_year}"
     else:
-        year_end_url = ""
-    year_str = f"{year_start_url}{year_end_url}"
+        end_year_url = ""
+    year_str = f"&year={start_year_url}{end_year_url}"
     venue_str = f"&venue={venues}"
 
     # Ensure ExternalIds (contain DOI) is always the last element.
@@ -101,7 +101,8 @@ def search_s2(
     base_str = "http://api.semanticscholar.org/graph/v1/paper/search/bulk?"
 
     for term in queries:
-        url = f"{base_str}term={term}{fields_str}{venue_str}{year_str}"
+        url = f"{base_str}query={term}{fields_str}{venue_str}{year_str}"
+        print(url)
         r = requests.get(url).json()
         print(f"Will retrieve an estimated {r['total']} documents for {term}")
 
@@ -165,7 +166,7 @@ The quotation marks are required to ensure that the query is correctly parsed.
         default="title,abstract,authors,year,venue,openAccessPdf,externalIds",
     )
     parser.add_argument(
-        "--csv_name",
+        "--csv",
         help="Add the name of the file to save results to.",
         default="results.tsv",
     )
