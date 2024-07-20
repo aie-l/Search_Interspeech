@@ -137,7 +137,7 @@ def main():
     parser.add_argument(
         "--end_year",
         type=int,
-        help="Enter the first year to be included in the search.",
+        help="Enter the last year to be included in the search.",
         default=2024,
     )
     parser.add_argument(
