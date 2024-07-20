@@ -1,3 +1,4 @@
+import os
 import csv
 import pydoi
 import requests
@@ -186,6 +187,9 @@ The quotation marks are required to ensure that the query is correctly parsed.
     search_results = search_s2(**args_dict)
     to_write = []
     header = ["idx", "link", "pdf", "title", "abstract", "venue"]
+
+    if args.download:
+        os.makedirs(args.download_dir, exist_ok=True)
 
     for paper in search_results:
         paper["errors"] = []
