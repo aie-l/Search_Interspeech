@@ -1,19 +1,19 @@
 import csv
 import pydoi
 import requests
+import argparse
 from tqdm import tqdm
 from typing import List
-from argparse import ArgumentParser
 
 
 def extract_url(paper):
-    """Get URL for paper. Give preference to ArXiv"""
-    if "ArXiv" in paper["externalIds"].keys():
-        arxiv_idx = paper["externalIds"]["ArXiv"]
-        return f"https://arxiv.org/abs/{arxiv_idx}"
-    elif "DOI" in paper["externalIds"].keys():
+    """Get URL for paper. Give preference to DOI."""
+    if "DOI" in paper["externalIds"].keys():
         resolved = pydoi.get_url(paper["externalIds"]["DOI"])
         return resolved if resolved else paper["url"]
+    elif "ArXiv" in paper["externalIds"].keys():
+        arxiv_idx = paper["externalIds"]["ArXiv"]
+        return f"https://arxiv.org/abs/{arxiv_idx}"
     else:
         return False
 
@@ -31,11 +31,14 @@ def get_idx(paper):
 
 def url_to_pdf_link(url):
     """Parse URL into the link for the PDF."""
-    if "arxiv" in url:
-        url = url.replace("abs", "pdf")
-        url = f"{url}.pdf"
-    elif "isca-archive" in url:
-        url = url.replace("html", "pdf")
+    if not url:
+        return None
+    else:
+        if "arxiv" in url:
+            url = url.replace("abs", "pdf")
+            url = f"{url}.pdf"
+        elif "isca-archive" in url:
+            url = url.replace("html", "pdf")
     return url
 
 
@@ -89,7 +92,12 @@ def search_s2(
         fields.append("externalIds")
     elif "ExternalIds" in fields:
         fields.pop("ExternalIds")
-    fields_str = f"&fields={','.join(fields)}"
+    if "authors" not in fields:
+        fields.append("authors")
+    if "year" not in fields:
+        fields.append("year")
+
+    fields_str = f"&fields={fields}"
     base_str = "http://api.semanticscholar.org/graph/v1/paper/search/bulk?"
 
     for term in queries:
@@ -103,7 +111,7 @@ def search_s2(
                     idx = get_idx(paper)
                     if idx not in idx_list:
                         idx_list.append(idx)
-                        res = {key: paper.get(key) for key in fields}
+                        res = {key: paper.get(key) for key in fields.split(',')}
                         res.update({"idx": idx, "term": term, "url": None, "pdf": None})
                         yield res
 
@@ -113,66 +121,77 @@ def search_s2(
 
 
 def main():
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="""Search for & download papers from ISCA venues via Semantic Scholar.
         The API description is here:
         https://api.semanticscholar.org/api-docs/#tag/Paper-Data/operation/get_graph_paper_bulk_search
-        """
+        """,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "--year",
+        "--start_year",
         type=int,
-        desc="Enter the first year to be included in the search.",
+        help="Enter the first year to be included in the search.",
         default=1970,
+    )
+    parser.add_argument(
+        "--end_year",
+        type=int,
+        help="Enter the first year to be included in the search.",
+        default=2024,
     )
     parser.add_argument(
         "--venues",
         type=str,
-        desc="Enter the venues to be searched through (e.g., `interspeech,IberSPEECH`)",
-        default="interspeech",
+        help="Enter the venues to be searched through (e.g., `interspeech,IberSPEECH`)",
+        default="Interspeech",
     )
     parser.add_argument(
-        "--max_results",
-        type=int,
-        desc="Enter the maximum number of results to return.",
-        default=20000,
-    )
-    parser.add_argument(
-        "--query",
+        "--queries",
         "-q",
-        desc="Enter the query here following the Semantic Scholar API query format.",
+        help="""Enter the first query here using the Semantic Scholar API query format.
+For example, to search for two queries one searching for ASR and English and one
+for TTS and English write:
+--queries "ASR + English" "TTS + English"
+
+The quotation marks are required to ensure that the query is correctly parsed.
+        """,
         required=True,
+        nargs="+",
     )
     parser.add_argument(
         "--fields",
-        desc="Enter S2 fields (bulk search) to return (e.g., `title,year,externalIds').",
-        default="title,year,venue,openAccessPdf,externalIds",
+        help="Enter S2 fields (bulk search) to return (e.g., `title,year,externalIds').",
+        default="title,abstract,authors,year,venue,openAccessPdf,externalIds",
     )
     parser.add_argument(
         "--csv_name",
-        desc="Add the name of the file to save results to.",
+        help="Add the name of the file to save results to.",
         default="results.tsv",
     )
     parser.add_argument(
         "--download",
-        desc="Download the PDFs as well as creating a spreadsheet.",
+        help="Download the PDFs as well as creating a spreadsheet.",
         default=True,
     )
     parser.add_argument(
-        "--download_dir", desc="Directory to store downloaded PDFs to", default="pdfs/"
+        "--download_dir",
+        help="Directory to store downloaded PDFs to",
+        default="pdfs/",
     )
     args = parser.parse_args()
+    args_dict = args.__dict__
 
-    search_results = search_s2(**args)
+    search_results = search_s2(**args_dict)
     to_write = []
-    header = ["idx", "url", "pdf", "title", "abstract", "venue"]
+    header = ["idx", "link", "pdf", "title", "abstract", "venue"]
 
     for paper in search_results:
-        paper = search_results.pop(paper)
         paper["errors"] = []
 
         url = extract_url(paper)
-        pdf_url = url_to_pdf_link(url)
+        pdf_url = url_to_pdf_link(url) if url else ""
+        paper["errors"].append("Interspeech URL not ")
 
         if url:
             paper["link"] = url
